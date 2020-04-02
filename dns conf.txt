@@ -1,0 +1,79 @@
+DNS Configuration:
+#yum install bind-utils* -y
+--------------------------------------------------------
+# cd /etc/sysconfig/network-scripts/ifcfg-ens33
+type=ethernet
+device=ens33
+onboot=yes
+bootproto=static
+ipaddr=192.168.219.145
+gateway=192.168.21.2
+netmask=255.255.255.0
+:wq!
+#systemctl restart network
+-----------------------------------------------------------
+#vi /etc/named.conf
+go to options type the IPADDR 192.168.219.145
+allow-querry {localhost;any;};
+:wq!
+#systemctl restart named.service
+#systemctl enable named.service
+#systemctl status named.service
+#firewall-cmd  --permanent --add-port=53/tcp
+#firewall-cmd --reload
+#firewall-cmd --list-all   --->to check the pots activation
+
+#vi /etc/named.conf
+goto end of file and type 
+zone "srikanth.com" IN {
+type master;
+file"forward.zone.com";
+allow*updates{ none;};
+};
+
+zone 219.168.192.in-addr-arpa"IN{
+type master;
+file "reverse.zone.com;
+alow*updates{ none;};
+ };
+
+#cd /var/named/
+#cp named.localhost  forward.zone.com
+#vi forward.zone.com
+STTL 1D 
+      IN SOA dns1.srikamth.com. root. dns1.srikamth.com.(
+                      0
+                      1D
+                       1H
+                        1W )
+
+
+      IN   NS  dns1.srikanth.com.
+dbs1  IN   A   192.168.219.145
+:wq!
+#chown root:named forward.zone.com
+----------------------------------------------------
+#cp named.loopback reverse.zone.com
+# vi reverse.zone.com
+STTL 1D 
+      IN SOA dns1.srikamth.com. root. dns1.srikamth.com.(
+                      0
+                      1D
+                       1H
+                        1W  
+      IN  NS   dns1.srikanth.com.
+145   IN  PTR  dns1.srikanth.com.
+:wq!
+#chpwn root:named reverse.zone.com
+
+# named-chkconf -z /etc/named.conf ---->To check config file coorect or not.
+
+#named-chekzone forward /var/named/foreward.zone.com
+
+#named-chekzone reverse /var/named/reverse.zone.com
+#systemctl restart named
+
+
+
+
+
